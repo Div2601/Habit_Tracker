@@ -1,0 +1,117 @@
+<% if(habits.length){
+
+    function calculateDateDiff(endDate, startDate){
+      let startMonth = startDate.getMonth()+1;
+      let endMonth = endDate.getMonth()+1;
+
+      if(startMonth <= 9){
+        startMonth="0"+startMonth;
+      }
+      if(endMonth <= 9){
+        endMonth="0"+endMonth;
+      }
+
+    const startDateStruct = startDate.getFullYear()+"-"+(startMonth)+"-"+startDate.getDate();
+    const endDateStruct = endDate.getFullYear()+"-"+(endMonth)+"-"+endDate.getDate();
+
+    const date1 = new Date(startDateStruct);
+    const date2 = new Date(endDateStruct);
+
+    const diffTime = Math.abs(date2 - date1);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }
+
+  %>
+  <% habits.forEach(habit => {
+    let countDone = 0;
+    const today = new Date();
+    const createdDate = new Date(habit.createdAt);
+    const daysPassedFromHaibtCreated = calculateDateDiff(today, createdDate);
+
+  %>
+<div class="habit">
+  <div class="flex aic habit-wrap">
+    <div class="habit__info">
+      <div class="habit__name"><%=habit.habit%></div>
+      <div class="habit__creation-date"><%=
+      createdDate.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      %></div>
+      <div class="habit__creation__info">
+        <div class="flex aic">
+          <div class="habit__creation__info__achieve">Daily</div>
+        </div>
+      </div>
+    </div>
+    <div class="habit__action">
+      <button class="button habitDone actionButton" data-a="Done" data-h="<%=habit._id%>" title="Click to mark Done">
+        <img src="/images/checked.svg" alt="Done" />
+      </button>
+      <button class="button habitNotDone actionButton" data-a="Not Done" data-h="<%=habit._id%>" title="Click to mark Not Done">
+        <img src="/images/close.svg" alt="" />
+      </button>
+    </div>
+  </div>
+
+  <div class="flex aic habitHistoryWrap">
+    <%
+      // looping through each day from seven days ago date
+      // creating date @dateStruct
+      // and checking status from that "date as key" from habit object @dateWiseStatus
+
+      // d = Date
+      // h = Habit id
+      // a = Action
+      for(let i = 7; i>0; i--){
+      console.log("day >>>", i);
+        let sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - (i-1));
+        const sevenDaysAgoDate = sevenDaysAgo.getDate();
+
+        const dateStruct = (today.getMonth()+1)+"/"+sevenDaysAgoDate+"/"+today.getFullYear();
+        let cssClass="";
+        let dataStatus = "Done";
+        if( habit?.status){
+        const dateWiseStatus = habit?.status[dateStruct];
+        if(dateWiseStatus?.status){
+          switch (dateWiseStatus.status) {
+            case "Done":
+              countDone=countDone+1;
+              cssClass="done";
+              dataStatus="Not Done";
+              break;
+            case "Not Done":
+              cssClass="notdone";
+              dataStatus="Done";
+              break;
+            default:
+              dataStatus="Done";
+              break;
+          }
+        }
+      }
+    %>
+      <% const dateDiffBSDaDCd = calculateDateDiff(createdDate, sevenDaysAgo);
+
+      if(sevenDaysAgoDate<createdDate.getDate()){ %>
+        <div class="habitStatus disabled flex aic jcc <%=cssClass%>">
+          <%=sevenDaysAgoDate;%>
+        </div>
+      <% }else{ %>
+        <button class="habitStatus flex aic jcc loader <%=cssClass%>" data-d="<%=dateStruct%>" data-h="<%=habit._id%>" data-a="<%=dataStatus%>" title="Click to change status">
+        <%=sevenDaysAgoDate;%>
+      </button>
+      <% } %>
+
+    <% } %>
+    <%=countDone+"/"+(daysPassedFromHaibtCreated+1); %>
+  </div>
+</div>
+<% }); %>
+<% } %>
